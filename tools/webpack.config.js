@@ -8,6 +8,7 @@
  */
 
 import path from 'path';
+import _ from 'lodash';
 import webpack from 'webpack';
 import AssetsPlugin from 'assets-webpack-plugin';
 import nodeExternals from 'webpack-node-externals';
@@ -107,7 +108,31 @@ const config = {
 
       // Rules for Style Sheets
       {
+        test: /\.less$/,
+        include: [/node_modules\/.*antd/],
+        use: [
+          // Convert CSS into JS module
+          'style-loader',
+
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: isDebug,
+              minimize: !isDebug,
+              discardComments: { removeAll: true },
+            },
+          },
+
+          {
+            loader: 'less-loader',
+          },
+        ],
+      },
+
+      // Rules for Style Sheets
+      {
         test: reStyle,
+        exclude: [/node_modules\/.*antd/],
         rules: [
           // Convert CSS into JS module
           {
@@ -279,7 +304,7 @@ const config = {
 // -----------------------------------------------------------------------------
 
 const clientConfig = {
-  ...config,
+  ..._.cloneDeep(config),
 
   name: 'client',
   target: 'web',
@@ -354,6 +379,15 @@ const clientConfig = {
     tls: 'empty',
   },
 };
+
+const scriptRuleIndex = _.findIndex(clientConfig.module.rules, [
+  'test',
+  reScript,
+]);
+clientConfig.module.rules[scriptRuleIndex].options.plugins = [
+  ...clientConfig.module.rules[scriptRuleIndex].options.plugins,
+  ['import', { libraryName: 'antd', style: true }],
+];
 
 //
 // Configuration for the server-side bundle (server.js)

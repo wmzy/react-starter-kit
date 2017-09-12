@@ -185,3 +185,10 @@ textarea {
     page-break-after: avoid;
   }
 }
+
+.logo {
+  height: 32px;
+  background: #333;
+  border-radius: 6px;
+  margin: 16px;
+}
